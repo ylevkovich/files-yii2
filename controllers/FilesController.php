@@ -166,6 +166,11 @@ class FilesController extends Controller
             ]);
     }
 
+    /**
+     * Takes file link by id.
+     * @param integer $id id file.
+     * @return string link to file
+     */
     protected static function getFilePathById($id)
     {
         $ob = Files::findOne($id);
