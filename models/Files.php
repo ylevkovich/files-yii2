@@ -55,12 +55,6 @@ class Files extends \yii\db\ActiveRecord
         ]);
     }
 
-    public function getFilePath($id)
-    {
-        $ob = $this->findOne($id);
-        return '../upload/'.Yii::$app->user->identity['login'].'/'.$ob['path'];
-    }
-
     public function getFileShareLink($id)
     {
         $ob = $this->findOne($id);

@@ -91,9 +91,7 @@ class FilesController extends Controller
 
     public function actionDownload($id)
     {
-        $model = new Files();
-        $file = $model->getFilePath($id);
-
+        $file = self::getFilePathById($id);
         if (file_exists($file)) {
             if (ob_get_level()) {
                 ob_end_clean();
@@ -146,7 +144,7 @@ class FilesController extends Controller
             if( Yii::$app->user->identity['id'] != $modelFiles['id_user'] )
                 throw new GoodException('Error', 'Wrong file id...');
 
-            $filePath = self::getFilePath($id);
+            $filePath = self::getFilePathById($id);
             if( file_exists ($filePath) )
                 unlink($filePath);
 
@@ -168,5 +166,13 @@ class FilesController extends Controller
             ]);
     }
 
-//    public function
+    protected static function getFilePathById($id)
+    {
+        $ob = Files::findOne($id);
+        return '../upload/'.Yii::$app->user->identity['login'].'/'.$ob['path'];
+    }
+
+    public function actionGetFileByHash($hash){
+
+    }
 }
