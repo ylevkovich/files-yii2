@@ -34,19 +34,6 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]) ?>
 
-    <?php
-        Modal::begin([
-            'options' => [
-                'id' => 'shareLink'
-            ],
-            'header' => 'Take this URL'
-        ]);
-
-        if(isset($url)) echo $url;
-
-        Modal::end();
-    ?>
-
     <?php ActiveForm::end();
     $obActionColumn = new ActionColumn();
     $obActiveRecord = new ActiveRecord();
@@ -63,7 +50,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     'share'=>function ($url, $model) {
                         $customurl=Yii::$app->getUrlManager()->createUrl([
                             'files/share',
-                            'id'=>$model['id']]);
+                            'id'=>$model['id']
+                        ]);
                         return Html::a(
                             '<span class="glyphicon glyphicon-share"></span>',
                             $customurl,

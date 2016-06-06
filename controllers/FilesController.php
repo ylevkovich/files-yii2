@@ -4,9 +4,10 @@ namespace app\controllers;
 
 use Yii;
 use app\models\Files;
+use yii\base\Exception;
+use app\components\GoodException;
 use yii\data\ActiveDataProvider;
 use yii\web\Controller;
-use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use app\models\UploadForm;
@@ -94,12 +95,9 @@ class FilesController extends Controller
         $file = $model->getFilePath($id);
 
         if (file_exists($file)) {
-            // сбрасываем буфер вывода PHP, чтобы избежать переполнения памяти выделенной под скрипт
-            // если этого не сделать файл будет читаться в память полностью!
             if (ob_get_level()) {
                 ob_end_clean();
             }
-            // заставляем браузер показать окно сохранения файла
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
             header('Content-Disposition: attachment; filename=' . basename($file));
@@ -108,7 +106,7 @@ class FilesController extends Controller
             header('Cache-Control: must-revalidate');
             header('Pragma: public');
             header('Content-Length: ' . filesize($file));
-            // читаем файл и отправляем его пользователю
+
             readfile($file);
             exit;
         }
@@ -138,16 +136,27 @@ class FilesController extends Controller
      * Deletes an existing Files model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
-     * @return mixed
+     * @return $this redirect to home url
+     * @throws GoodException user try to delete doesn't own file and if file doesn't exist
      */
     public function actionDelete($id)
     {
-        $modelFiles = Files::findOne($id);
+        try{
+            $modelFiles = Files::findOne(29);
+            if( Yii::$app->user->identity['id'] != $modelFiles['id_user'] )
+                throw new GoodException('Error', 'Wrong file id...');
 
-        if (unlink('../upload/' . Yii::$app->user->identity['login'] . '/' . $modelFiles->path))
-            $this->findModel($id)->delete();
+            $filePath = '../upload/' . Yii::$app->user->identity['login'] . '/' . $modelFiles['path'];
+            if( !file_exists ($filePath) )
+                throw new GoodException('Error', 'This file doesn\'t exist...');
 
-        return $this->redirect(['index']);
+            if(unlink($filePath))
+                $modelFiles->delete();
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
+
+        return $this->goHome();
     }
 
     public function actionShare($id)
