@@ -142,16 +142,16 @@ class FilesController extends Controller
     public function actionDelete($id)
     {
         try{
-            $modelFiles = Files::findOne(29);
+            $modelFiles = Files::findOne($id);
             if( Yii::$app->user->identity['id'] != $modelFiles['id_user'] )
                 throw new GoodException('Error', 'Wrong file id...');
 
-            $filePath = '../upload/' . Yii::$app->user->identity['login'] . '/' . $modelFiles['path'];
-            if( !file_exists ($filePath) )
-                throw new GoodException('Error', 'This file doesn\'t exist...');
+            $filePath = self::getFilePath($id);
+            if( file_exists ($filePath) )
+                unlink($filePath);
 
-            if(unlink($filePath))
-                $modelFiles->delete();
+            if( !$modelFiles->delete() )
+                throw new GoodException('Error', 'Deleting file error...');
         }catch(Exception $e){
             return $e->getMessage();
         }
