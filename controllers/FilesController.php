@@ -36,6 +36,11 @@ class FilesController extends Controller
                         'verbs' => ['GET', 'POST'],
                         'roles' => ['@']
                     ],
+                    [
+                        'allow' => true,
+                        'controllers' => ['files'],
+                        'actions' => ['get_file_by_code'],
+                    ],
                 ]
             ]
         ];
@@ -89,24 +94,47 @@ class FilesController extends Controller
         }
     }
 
-    public function actionDownload($id)
+    /**
+     * Allows download his file by id
+     *
+     * @param $id_file integer
+     * @throws GoodException if field with this id doesn't exist
+     */
+    public function actionDownload_his_file($id_file)
     {
-        $file = self::getFilePathById($id);
-        if (file_exists($file)) {
+        $this->downloadFileByPath(self::getFilePathById($id_file));
+    }
+
+    /**
+     * Downloads a file from a specified path
+     *
+     * @param $path string. Path to file
+     * @return string
+     * @throws GoodException if file doesn't exist
+     */
+    protected function downloadFileByPath($path)
+    {
+        try{
+            if( !file_exists($path) )
+                throw new GoodException('Error', 'No such file...');
+
             if (ob_get_level()) {
                 ob_end_clean();
             }
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename=' . basename($file));
+            header('Content-Disposition: attachment; filename=' . basename($path));
             header('Content-Transfer-Encoding: binary');
             header('Expires: 0');
             header('Cache-Control: must-revalidate');
             header('Pragma: public');
-            header('Content-Length: ' . filesize($file));
+            header('Content-Length: ' . filesize($path));
 
-            readfile($file);
+            readfile($path);
             exit;
+
+        }catch(Exception $e){
+            return $e->getMessage();
         }
     }
 
@@ -121,7 +149,12 @@ class FilesController extends Controller
         $this->goHome();
     }
 
-    public function removeDirectory($dir)
+    /**
+     * Deletes directory
+     *
+     * @param $dir string. Path to directory
+     */
+    protected function removeDirectory($dir)
     {
         if ($objs = glob($dir . "/*")) {
             foreach ($objs as $obj) {
@@ -132,7 +165,7 @@ class FilesController extends Controller
 
     /**
      * Deletes an existing Files model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
+     * If deletion is successful, the browser will be redirected to the home page.
      * @param integer $id
      * @return $this redirect to home url
      * @throws GoodException user try to delete doesn't own file and if file doesn't exist
@@ -140,9 +173,8 @@ class FilesController extends Controller
     public function actionDelete($id)
     {
         try{
-            $modelFiles = Files::findOne($id);
-            if( Yii::$app->user->identity['id'] != $modelFiles['id_user'] )
-                throw new GoodException('Error', 'Wrong file id...');
+            if( !$modelFiles = Files::findOne($id))
+                throw new GoodException('Error', 'Doesn\'t exist field with this id...');
 
             $filePath = self::getFilePathById($id);
             if( file_exists ($filePath) )
@@ -157,27 +189,83 @@ class FilesController extends Controller
         return $this->goHome();
     }
 
+    /**
+     * Takes hashcode for sharing file.
+     * @param integer $id id file to sharing.
+     * @return mixed
+     * @throws
+     */
     public function actionShare($id)
     {
-        $model = new Files();
+        try{
+            if( !$file = Files::findOne($id) )
+                throw new GoodException('Error', 'Doesn\'t exist field with this id...');
 
-        return $this->render('share', [
-            'url' => $model->getFileShareLink($id),
+            if( Yii::$app->user->identity['id'] != $file['id_user'] )
+                throw new GoodException('Error', 'Wrong file id...');
+
+            return $this->render('share', [
+                'url' => self::getFileShareLinkByObj($file),
             ]);
+
+        }catch(Exception $e){
+            $e->getMessage();
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns link to downloading the file
+     *
+     * @return string link to the file
+     */
+    protected static function getFileShareLinkByObj($file)
+    {
+        return yii::$app->request->getHostInfo().Yii::$app->homeUrl.'files/get_file_by_code?code='.$file['share_link'];
     }
 
     /**
      * Takes file link by id.
      * @param integer $id id file.
-     * @return string link to file
+     * @return string link to file or false if error
+     * @throws GoodException if field with this id doesn't exist
      */
     protected static function getFilePathById($id)
     {
-        $ob = Files::findOne($id);
-        return '../upload/'.Yii::$app->user->identity['login'].'/'.$ob['path'];
+        try{
+            if( !$file = Files::findOne($id) )
+                throw new GoodException('Error', 'Doesn\'t exist field with this id...');
+
+            if( Yii::$app->user->identity['id'] != $file['id_user'] )
+                throw new GoodException('Error', 'Wrong file id...');
+
+            return '../upload/'.Yii::$app->user->identity['login'].'/'.$file['path'];
+        }catch(Exception $e){
+            $e->getMessage();
+        }
+
+        return false;
     }
 
-    public function actionGetFileByHash($hash){
+    /**
+     * Downloads file by hash-code
+     *
+     * @param $code string
+     * @return bool|string
+     * @throws GoodException if no one file doesn't linked by code
+     */
+    public function actionGet_file_by_code($code)
+    {
+        try{
+            if( !$file = Files::find()->with('user')->where(['share_link' => $code])->one() )
+                throw new GoodException('Error', 'No such file linked to this code...');
 
+            return $this->downloadFileByPath('../upload/'.$file->user->login.'/'.$file->path);
+        }catch(Exception $e){
+            $e->getMessage();
+        }
+
+        return false;
     }
 }

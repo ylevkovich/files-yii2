@@ -51,6 +51,12 @@ class BehaviorsController extends Controller
                     ],
                     [
                         'allow' => true,
+                        'controllers' => ['file'],
+                        'actions' => ['get_file_by_code'],
+                        'roles' => ['?']
+                    ],
+                    [
+                        'allow' => true,
                         'matchCallback' => function()
                         {
                             if(Yii::$app->user->identity['login'] === 'admin')

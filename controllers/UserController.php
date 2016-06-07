@@ -8,7 +8,6 @@ use app\Models\RegForm;
 use app\Models\LoginForm;
 use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
-use yii\filters\VerbFilter;
 
 class UserController extends BehaviorsController
 {

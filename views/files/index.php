@@ -61,7 +61,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
                     },
                     'download'=>function ($url, $model) {
-                        $customurl=Yii::$app->getUrlManager()->createUrl(['files/download','id'=>$model['id']]);
+                        $customurl=Yii::$app->getUrlManager()->createUrl(['files/download_his_file','id_file'=>$model['id']]);
                         return Html::a( '<span class="glyphicon glyphicon-download"></span>', $customurl,
                             ['title' => Yii::t('yii', 'Download')]);
                     }

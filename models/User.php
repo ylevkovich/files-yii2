@@ -52,15 +52,6 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
         ];
     }
 
-    /* Behavior*/
-
-//    public function behaviors()
-//    {
-//        return [
-//            TimestampBehavior::className()
-//        ];
-//    }
-
     /* Search by login */
 
     public static function findByLogin($login)

@@ -55,9 +55,8 @@ class Files extends \yii\db\ActiveRecord
         ]);
     }
 
-    public function getFileShareLink($id)
+    public function getUser()
     {
-        $ob = $this->findOne($id);
-        return yii::$app->id.'/files/get-file?hash='.$ob['share_link'];
+        return $this->hasOne(User::className(), ['id' => 'id_user']);
     }
 }
