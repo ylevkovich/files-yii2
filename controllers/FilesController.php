@@ -95,6 +95,7 @@ class FilesController extends Controller
                     $modelFiles->id_user = Yii::$app->user->identity['id'];
                     $modelFiles->path = $file->baseName . '.' . $file->extension;
                     $modelFiles->share_link = Yii::$app->security->generateRandomString();
+                    $modelFiles->size = filesize($pathToFile);
 
                     if( !$modelFiles->save() ){
                         unlink($pathToFile);

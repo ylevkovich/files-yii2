@@ -48,6 +48,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
             'path:ntext',
+            'size:ntext',
             ['class' => ActionColumn::className(),
                 'buttons'=>[
                     'share'=>function ($url, $model) {

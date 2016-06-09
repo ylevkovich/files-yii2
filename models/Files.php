@@ -11,6 +11,7 @@ use Yii;
  * @property integer $id_user
  * @property string $path
  * @property string $share_link
+ * @property int $size
  */
 class Files extends \yii\db\ActiveRecord
 {
@@ -29,7 +30,7 @@ class Files extends \yii\db\ActiveRecord
     {
         return [
             [['id_user', 'path', 'share_link'], 'required'],
-            [['id_user'], 'integer'],
+            [['id_user', 'size'], 'integer'],
             [['path'], 'string'],
             [['share_link'], 'string', 'max' => 32]
         ];
@@ -42,9 +43,10 @@ class Files extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'id_user' => 'Id User',
+            'id_user' => 'Id User', 
             'path' => 'Path',
             'share_link' => 'Share Link',
+            'size' => 'File size (bytes)',
         ];
     }
 
