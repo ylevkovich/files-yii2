@@ -1,3 +1,4 @@
 /upload/
 !/upload/admin
 /config/db.php
+/.idea/

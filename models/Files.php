@@ -44,7 +44,7 @@ class Files extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'id_user' => 'Id User', 
-            'path' => 'Path',
+            'path' => 'Name',
             'share_link' => 'Share Link',
             'size' => 'File size (bytes)',
         ];
