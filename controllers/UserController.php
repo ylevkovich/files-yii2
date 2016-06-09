@@ -7,9 +7,10 @@ use Yii;
 use app\Models\RegForm;
 use app\Models\LoginForm;
 use yii\data\ActiveDataProvider;
+use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 
-class UserController extends BehaviorsController
+class UserController extends Controller
 {
     public function actionLogin()
     {

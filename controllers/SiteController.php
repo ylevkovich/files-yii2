@@ -5,8 +5,9 @@ namespace app\controllers;
 use Yii;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use yii\web\Controller;
 
-class SiteController extends BehaviorsController
+class SiteController extends Controller
 {
      public function actions()
     {

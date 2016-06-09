@@ -10,6 +10,8 @@ use yii\bootstrap\Modal;
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
+
+$this->registerJsFile('web/js/files/index.js', ['depends' => [\yii\web\JqueryAsset::className()]]);
 $this->title = 'Files';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -25,7 +27,8 @@ $this->params['breadcrumbs'][] = $this->title;
     ]) ?>
     <?= $form->field($model, 'file[]')->fileInput(['multiple' => true]) ?>
 
-    <button class="btn btn-success">Upload chose files</button>
+<!--    <button class="btn btn-success">Upload chose files</button>-->
+
     <?= Html::a('Delete all files', ['deleteall'], [
         'class' => 'btn btn-danger',
         'data' => [

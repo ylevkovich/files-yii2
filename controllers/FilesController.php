@@ -18,6 +18,9 @@ use yii\web\UploadedFile;
  */
 class FilesController extends Controller
 {
+    /**
+     * @return array behavior rules
+     */
     public function behaviors()
     {
         return [
@@ -70,33 +73,44 @@ class FilesController extends Controller
         ]);
     }
 
-    public function uploadFiles()
+    /**
+     * Uploads files to user's directory
+     * @return string exception message if error
+     * @throws GoodException if data not saved to DB
+     */
+    protected function uploadFiles()
     {
-        $modelUpload = new UploadForm();
-        $modelUpload->file = UploadedFile::getInstances($modelUpload, 'file');
+        try{
+            $modelUpload = new UploadForm();
+            $modelUpload->file = UploadedFile::getInstances($modelUpload, 'file');
 
-        if ($modelUpload->file && $modelUpload->validate()) {
-            foreach ($modelUpload->file as $file) {
-                $pathToFile = '../upload/' . Yii::$app->user->identity['login'] . '/' . $file->baseName . '.' . $file->extension;
+            if( $modelUpload->file && $modelUpload->validate() ){
+                foreach ($modelUpload->file as $file){
+                    $pathToFile = '../upload/' . Yii::$app->user->identity['login'] . '/' . $file->baseName . '.' . $file->extension;
 
-                if ($file->saveAs($pathToFile)) {
+                    if( !$file->saveAs($pathToFile) )
+                        throw new GoodException('Error', 'Can\'t save file...');
+
                     $modelFiles = new Files();
                     $modelFiles->id_user = Yii::$app->user->identity['id'];
                     $modelFiles->path = $file->baseName . '.' . $file->extension;
                     $modelFiles->share_link = Yii::$app->security->generateRandomString();
 
-                    if (!$modelFiles->save())
+                    if( !$modelFiles->save() ){
                         unlink($pathToFile);
+                        throw new GoodException('Error','Save data error...');
+                    }
 
                     $this->goHome();
                 }
             }
+        }catch(Exception $e){
+            return $e->getMessage();
         }
     }
 
     /**
      * Allows download his file by id
-     *
      * @param $id_file integer
      * @throws GoodException if field with this id doesn't exist
      */
@@ -107,7 +121,6 @@ class FilesController extends Controller
 
     /**
      * Downloads a file from a specified path
-     *
      * @param $path string. Path to file
      * @return string
      * @throws GoodException if file doesn't exist
@@ -138,27 +151,30 @@ class FilesController extends Controller
         }
     }
 
+    /**
+     * Deletes files in user's directory and
+     * clears all in DB
+     */
     public function actionDeleteall()
     {
         $model = new Files();
         $pathToDir = '../upload/' . Yii::$app->user->identity['login'];
 
-        $this->removeDirectory($pathToDir);
+        $this->cleanDirectory($pathToDir);
         $model->clearDataUser();
 
         $this->goHome();
     }
 
     /**
-     * Deletes directory
-     *
+     * Cleans directory
      * @param $dir string. Path to directory
      */
-    protected function removeDirectory($dir)
+    protected function cleanDirectory($dir)
     {
         if ($objs = glob($dir . "/*")) {
             foreach ($objs as $obj) {
-                is_dir($obj) ? $this->removeDirectory($obj) : unlink($obj);
+                is_dir($obj) ? $this->cleanDirectory($obj) : unlink($obj);
             }
         }
     }
@@ -217,7 +233,6 @@ class FilesController extends Controller
 
     /**
      * Returns link to downloading the file
-     *
      * @return string link to the file
      */
     protected static function getFileShareLinkByObj($file)
@@ -250,7 +265,6 @@ class FilesController extends Controller
 
     /**
      * Downloads file by hash-code
-     *
      * @param $code string
      * @return bool|string
      * @throws GoodException if no one file doesn't linked by code
