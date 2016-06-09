@@ -4,15 +4,13 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\widgets\ActiveForm;
 use yii\grid\ActionColumn;
-use yii\db\ActiveRecord;
-use yii\bootstrap\Modal;
 
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 
 $this->registerJsFile('web/js/files/index.js', ['depends' => [\yii\web\JqueryAsset::className()]]);
-$this->title = 'Files';
+$this->title = 'Work panel';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="files-index">
@@ -20,27 +18,25 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <!--    Upload form    -->
-    <?php $form = ActiveForm::begin([
-        'options' =>[
-            'enctype' => 'multipart/form-data'
-        ]
-    ]) ?>
-    <?= $form->field($model, 'file[]')->fileInput(['multiple' => true]) ?>
-
-<!--    <button class="btn btn-success">Upload chose files</button>-->
-
-    <?= Html::a('Delete all files', ['deleteall'], [
-        'class' => 'btn btn-danger',
-        'data' => [
-            'confirm' => 'Are you sure you want to delete all your files?',
-            'method' => 'post',
-        ],
-    ]) ?>
-
-    <?php ActiveForm::end();
-    $obActionColumn = new ActionColumn();
-    $obActiveRecord = new ActiveRecord();
-    ?>
+    <div class="panel panel-info">
+        <div class="panel-heading">You can add files</div>
+        <div class="panel-body">
+            <?php $form = ActiveForm::begin([
+                'options' =>[
+                    'enctype' => 'multipart/form-data'
+                ]
+            ]) ?>
+            <?= $form->field($model, 'file[]')->fileInput(['multiple' => true]) ?>
+            <?= Html::a('Delete all files', ['deleteall'], [
+                'class' => 'btn btn-danger',
+                'data' => [
+                    'confirm' => 'Are you sure you want to delete all your files?',
+                    'method' => 'post',
+                ],
+            ]) ?>
+            <?php ActiveForm::end();?>
+        </div>
+    </div>
     <!--    Upload form end   -->
 
     <?= GridView::widget([
