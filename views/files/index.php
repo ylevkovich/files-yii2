@@ -26,7 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'enctype' => 'multipart/form-data'
                 ]
             ]) ?>
-            <?= $form->field($model, 'file[]')->fileInput(['multiple' => true]) ?>
+            <?= $form->field($model, 'file[]')->fileInput(['multiple' => true,'class' => 'btn btn-default']) ?>
             <?= Html::a('Delete all files', ['deleteall'], [
                 'class' => 'btn btn-danger',
                 'data' => [

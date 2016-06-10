@@ -32,13 +32,17 @@ class UserController extends Controller
                     [
                         'allow' => true,
                         'roles' => ['@'],
-                        'actions' => ['index', 'logout'],
+                        'actions' => ['index', 'logout', 'view', 'update', 'delete'], //view,update,delete only for admin
                     ],
                 ]
             ]
         ];
     }
 
+    /**
+     * Logins users
+     * @return string|\yii\web\Response
+     */
     public function actionLogin()
     {
         if (!Yii::$app->user->isGuest):
@@ -54,31 +58,38 @@ class UserController extends Controller
         return $this->render('login',['model' => $model]);
     }
 
+    /**
+     * Registers new user
+     * @return string|\yii\web\Response
+     * @throws GoodException if registration error or creating folder error
+     */
     public function actionReg()
     {
-        $model = new RegForm();
+        try{
+            $model = new RegForm();
+            if( $model->load(Yii::$app->request->post()) && $model->validate() ){
+                if( !$user = $model->reg())
+                    throw new GoodException('Error', 'Registration error...');
 
-        if( $model->load(Yii::$app->request->post()) && $model->validate() ):
-            if($user = $model->reg()):
-                if( mkdir("../upload/$model->login", 0700) ):
-                    if( Yii::$app->getUser()->login($user) ):
-                        return $this->goHome();
-                    endif;
-                else:
-                    Yii::$app->session->setFlash('error', 'Creating folder error.');
-                    Yii::error('Creating folder error.');
-                    return $this->refresh();
-                endif;
-            else:
-                Yii::$app->session->setFlash('error', 'Registration error.');
-                Yii::error('Registration error.');
-                return $this->refresh();
-            endif;
-        endif;
+                $dir = "../upload/$model->login";
+                if( !is_dir($dir) )
+                    if( !mkdir($dir, 0700) )
+                        throw new GoodException('Error','Creating folder error...');
 
-        return $this->render('reg',['model' => $model]);
+                Yii::$app->getUser()->login($user);
+                return $this->goHome();
+            }
+
+            return $this->render('reg',['model' => $model]);
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
+    /**
+     * Logs out user
+     * @return \yii\web\Response
+     */
     public function actionLogout()
     {
         Yii::$app->user->logout();
@@ -108,6 +119,12 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Shows all info about user
+     * @param $id
+     * @return string
+     * @throws NotFoundHttpException
+     */
     public function actionView($id)
     {
         return $this->render('view', [
@@ -115,38 +132,88 @@ class UserController extends Controller
         ]);
     }
 
-    public function actionCreate()
-    {
-        $model = new User();
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
-        }
-    }
-
+    /**
+     * Allows edit data by admin
+     * @param $id
+     * @return string|\yii\web\Response
+     * @throws GoodException if user isn't admin
+     */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
+        try{
+            if( Yii::$app->user->identity->login != 'admin')
+                throw new GoodException('Error', 'Deny access...');
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
+            $model = $this->findModel($id);
+
+            if ($model->load(Yii::$app->request->post()) && $model->save()) {
+                return $this->redirect(['view', 'id' => $model->id]);
+            } else {
+                return $this->render('update', [
+                    'model' => $model,
+                ]);
+            }
+        }catch(Exception $e){
+            return $e->getMessage();
         }
     }
 
+    /**
+     * Deletes user by id. Only for admin
+     * @param $id integer user's id to delete
+     * @return string|\yii\web\Response
+     * @throws GoodException if user not admin, if  data can't be deleted
+     * @throws \Exception
+     */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-        //TODO deleting user folder
-        return $this->redirect(['index']);
+        try{
+            if( Yii::$app->user->identity->login != 'admin')
+                throw new GoodException('Error', 'Deny access...');
+
+            if( !$this->findModel($id)->delete() )
+                throw new GoodException('Error','Can\'t delete data...');
+
+            $this->deleteUsersDir($id);
+
+            return $this->redirect(['index']);
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
     }
 
+    /**
+     * Deletes user files and directory by id. Only for admin
+     * @param $id. User id
+     * @return string
+     * @throws GoodException if user not admin,
+     * if files in directory can't be deleted
+     * if user's directory can't be deleted
+     */
+    protected function deleteUsersDir($id){
+        try{
+            if( Yii::$app->user->identity->login != 'admin')
+                throw new GoodException('Error', 'Deny access...');
+
+            $login = $this->findModel($id)->login;
+            $pathToDir = '../upload/' . $login;
+            FilesController::cleanDirectory($pathToDir);
+            if( !empty(scandir($pathToDir)[2]) )
+                throw new GoodException('Error','Users files can\'t delete...');
+
+            if( !rmdir($pathToDir) )
+                throw new GoodException('Error','Can\'t delete user\'s directory');
+
+        }catch(Exception $e){
+            return $e->getMessage();
+        }
+    }
+
+    /**
+     * @param $id. User's id
+     * @return null|static
+     * @throws NotFoundHttpException if requested page does not exist
+     */
     protected function findModel($id)
     {
         if (($model = User::findOne($id)) !== null) {

@@ -28,12 +28,19 @@ AppAsset::register($this);
 <div class="wrap">
     <?php
     NavBar::begin([
-        'brandLabel' => 'Private files - Yii2',
+        'brandLabel' => 'Files',
         'brandUrl' => Yii::$app->homeUrl,
         'options' => [
             'class' => 'navbar-inverse navbar-fixed-top',
         ],
     ]);
+
+    if( Yii::$app->user->identity->login == 'admin' ):
+        $menuItems[] = [
+            'label' => 'Admin panel',
+            'url' => ['/user/index']
+        ];
+    endif;
 
     if (Yii::$app->user->isGuest):
         $menuItems[] = [

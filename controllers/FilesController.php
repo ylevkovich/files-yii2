@@ -161,7 +161,7 @@ class FilesController extends Controller
         $model = new Files();
         $pathToDir = '../upload/' . Yii::$app->user->identity['login'];
 
-        $this->cleanDirectory($pathToDir);
+        self::cleanDirectory($pathToDir);
         $model->clearDataUser();
 
         $this->goHome();
@@ -171,11 +171,11 @@ class FilesController extends Controller
      * Cleans directory
      * @param $dir string. Path to directory
      */
-    protected function cleanDirectory($dir)
+    public static function cleanDirectory($dir)
     {
         if ($objs = glob($dir . "/*")) {
             foreach ($objs as $obj) {
-                is_dir($obj) ? $this->cleanDirectory($obj) : unlink($obj);
+                is_dir($obj) ? self::cleanDirectory($obj) : unlink($obj);
             }
         }
     }
