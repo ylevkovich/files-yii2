@@ -106,7 +106,9 @@ class FilesController extends Controller
                     if( !$file->saveAs($pathToFile) )
                         throw new GoodException('Error', 'Can\'t save file...');
 
-                    if( Files::find()->where(['path' => $file->baseName . '.' . $file->extension])->one() )
+                    if( Files::find()->where([
+                        'path' => $file->baseName . '.' . $file->extension,
+                        'id_user' => Yii::$app->user->identity->id])->one() )
                        continue;
 
                     $modelFiles = new Files();
