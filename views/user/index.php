@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\grid\ActionColumn;
 
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -24,7 +25,17 @@ $this->params['breadcrumbs'][] = $this->title;
             'email:email',
             'authKey',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            ['class' => ActionColumn::className(),
+                'buttons'=>[
+
+                    'delete'=>function ($url, $model) {
+                        $customurl=Yii::$app->getUrlManager()->createUrl(['user/delete','id'=>$model['id']]);
+                        return Html::a( '<span class="glyphicon glyphicon-trash"></span>', $customurl,
+                            ['title' => Yii::t('yii', 'Delete')]);
+                    }
+                ],
+                'template'=>'{view}  {update}  {delete}',
+            ],
         ],
     ]); ?>
 
