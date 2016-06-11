@@ -70,7 +70,19 @@ class FilesController extends Controller
         return $this->render('index', [
             'dataProvider' => $dataProvider,
             'model' => $model,
+            'filesSize' => round(self::getUsersFilesSize('mb')),
         ]);
+    }
+
+    /**
+     * @param string $type
+     * @return mixed
+     */
+    public static function getUsersFilesSize($type = 'kb'){
+        if( $type === 'mb')
+            return round((new \yii\db\Query())->from('files')->where(['id_user' => Yii::$app->user->identity['id']])->sum('size')/1024,2);
+
+        return (new \yii\db\Query())->from('files')->where(['id_user' => Yii::$app->user->identity['id']])->sum('size');
     }
 
     /**
@@ -88,14 +100,20 @@ class FilesController extends Controller
                 foreach ($modelUpload->file as $file){
                     $pathToFile = '../upload/' . Yii::$app->user->identity['login'] . '/' . $file->baseName . '.' . $file->extension;
 
+                    if( Yii::$app->params['userWorkSpace'] - self::getUsersFilesSize('mb') < self::toMb($file->size) )
+                        throw new GoodException('Limited workspace','Please delete some your files for successfuly upload this file...');
+
                     if( !$file->saveAs($pathToFile) )
                         throw new GoodException('Error', 'Can\'t save file...');
+
+                    if( Files::find()->where(['path' => $file->baseName . '.' . $file->extension])->one() )
+                       continue;
 
                     $modelFiles = new Files();
                     $modelFiles->id_user = Yii::$app->user->identity['id'];
                     $modelFiles->path = $file->baseName . '.' . $file->extension;
                     $modelFiles->share_link = Yii::$app->security->generateRandomString();
-                    $modelFiles->size = filesize($pathToFile);
+                    $modelFiles->size = self::toKb($file->size);
 
                     if( !$modelFiles->save() ){
                         unlink($pathToFile);
@@ -108,6 +126,24 @@ class FilesController extends Controller
         }catch(Exception $e){
             return $e->getMessage();
         }
+    }
+
+    /**
+     * Converts to kilobytes from bytes
+     * @param $b. Bytes
+     * @return mixed. Kilobytes
+     */
+    public static function toKb($b){
+        return round($b/1024,1);
+    }
+
+    /**
+     * Converts to megabytes from bytes
+     * @param $b. Bytes
+     * @return mixed. Megabytes
+     */
+    public static function toMb($b){
+        return round($b/1024/1024,1);
     }
 
     /**

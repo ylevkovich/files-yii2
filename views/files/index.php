@@ -10,6 +10,7 @@ use yii\grid\ActionColumn;
 
 
 $this->registerJsFile('web/js/files/index.js', ['depends' => [\yii\web\JqueryAsset::className()]]);
+$this->registerCssFile('web/css/files/index.css', ['depends' => [\yii\web\JqueryAsset::className()]]);
 $this->title = 'Work panel';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -26,6 +27,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'enctype' => 'multipart/form-data'
                 ]
             ]) ?>
+
             <?= $form->field($model, 'file[]')->fileInput(['multiple' => true,'class' => 'btn btn-default']) ?>
             <?= Html::a('Delete all files', ['deleteall'], [
                 'class' => 'btn btn-danger',
@@ -34,6 +36,19 @@ $this->params['breadcrumbs'][] = $this->title;
                     'method' => 'post',
                 ],
             ]) ?>
+
+            <div class="panel panel-primary workspace">
+                <div class="panel-heading">Workspace</div>
+                <span class="used">
+                    <?=$filesSize?>
+                </span>
+                <span>/</span>
+                <span class="limit">
+                    <?=Yii::$app->params['userWorkSpace']?>
+                </span>
+                <div class="panel-footer">Mbytes used</div>
+            </div>
+
             <?php ActiveForm::end();?>
         </div>
     </div>

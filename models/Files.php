@@ -30,7 +30,7 @@ class Files extends \yii\db\ActiveRecord
     {
         return [
             [['id_user', 'path', 'share_link'], 'required'],
-            [['id_user', 'size'], 'integer'],
+            [['id_user'], 'integer'],
             [['path'], 'string'],
             [['share_link'], 'string', 'max' => 32]
         ];
@@ -46,7 +46,7 @@ class Files extends \yii\db\ActiveRecord
             'id_user' => 'Id User', 
             'path' => 'Name',
             'share_link' => 'Share Link',
-            'size' => 'File size (bytes)',
+            'size' => 'File size (Kb)',
         ];
     }
 

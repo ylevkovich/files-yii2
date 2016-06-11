@@ -1,0 +1,8 @@
+div.workspace{
+    width: 180px;
+    margin: -90px auto;
+    text-align: center;
+}
+div.workspace span{
+    font-size: 35px;
+}
