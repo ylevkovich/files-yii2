@@ -6,9 +6,10 @@ use yii\widgets\ActiveForm;
 /* @var $this yii\web\View */
 /* @var $model app\Models\LoginForm */
 /* @var $form ActiveForm */
+$this->title = 'Login';
 ?>
 <div class="user-login">
-
+    <h1><?= Html::encode($this->title) ?></h1>
     <?php $form = ActiveForm::begin(); ?>
 
         <?= $form->field($model, 'login') ?>
